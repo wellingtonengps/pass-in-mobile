@@ -31,7 +31,7 @@ export function Credential({onChangeAvatar, onExpandQRCode, image}: Props) {
                 {image ? (
                     <TouchableOpacity activeOpacity={0.9} onPress={onChangeAvatar}>
                     <Image source={{uri: image}}
-                           className="w-36 h-36 rounded-full -mt-24"/>
+                           className="w-36 h-36 rounded-full" style={{marginTop: -87, marginBottom: 28}}/>
                     </TouchableOpacity>
                 ) : (
                     <TouchableOpacity activeOpacity={0.9}
@@ -41,14 +41,16 @@ export function Credential({onChangeAvatar, onExpandQRCode, image}: Props) {
                                           top: -86,
                                           backgroundColor: '#ccc',
                                           alignItems: 'center',
-                                          justifyContent: 'center',}}
+                                          justifyContent: 'center',
+                                          marginBottom: -60
+                                      }}
                                       onPress={onChangeAvatar}>
                         <Feather name="camera" color={colors.green[400]} size={32}/>
                     </TouchableOpacity>
                 )
                 }
 
-                <Text className="font-bold text-2xl text-zinc-50 mt-4">
+                <Text className="font-bold text-2xl text-zinc-50">
                     Wellington Pereira Silva
                 </Text>
                 <Text className="font-regular text-base text-zinc-300 mb-4">wellington.engps@gmail.com</Text>
