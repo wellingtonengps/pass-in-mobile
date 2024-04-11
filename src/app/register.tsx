@@ -1,6 +1,7 @@
 import {View, Image, Text, Alert} from "react-native"
 import {FontAwesome6, MaterialIcons} from "@expo/vector-icons"
 import {Link, router} from "expo-router"
+import axios from "axios"
 
 import {colors} from "@/styles/colors";
 
@@ -9,18 +10,52 @@ import {Button} from "@/components/button";
 import {Input} from "@/components/input";
 import {StatusBar} from "react-native";
 import {useState} from "react";
+import {api} from "@/server/api"
+
+const EVENT_ID = "84bbc665-5362-4ecb-bc08-09c21585a023"
 
 export default function Register() {
 
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
 
-    function handleRegister() {
-        if(!name.trim() || !email.trim()){
-            return Alert.alert("Inscrição","Preencha todos os campos!")
+    async function handleRegister() {
+        try {
+            if (!name.trim() || !email.trim()) {
+                return Alert.alert("Inscrição", "Preencha todos os campos!")
+            }
+
+            setIsLoading(true)
+
+            const registerResponse = await api.post(`/events/${EVENT_ID}/attendees`, {
+                name, email
+            })
+
+            if(registerResponse.data.attendeeId){
+                Alert.alert("Inscrição", "Inscrição realizada com sucesso!", [
+                    {text: "Ok", onPress: () => router.push("/ticket")}
+                ])
+            }
+
+
+        } catch (error) {
+            console.log(error)
+
+            if(axios.isAxiosError(error)){
+                if(String(error.response?.data.message).includes("Attendee already registered")){
+                    return Alert.alert("Inscrição", "Este e-mail já está cadastrado!")
+                }
+                if(String(error.response?.data.message).includes("Event is full")){
+                    return Alert.alert("Inscrição", "O evento está cheio!")
+                }
+            }
+
+            Alert.alert("Inscrição", "Não foi possível fazer a inscrição")
+        } finally {
+            setIsLoading(false)
         }
 
-        router.push("/ticket")
     }
 
     return (
@@ -38,7 +73,7 @@ export default function Register() {
                 </Input>
                 <Button
                     title="Realizar inscrição"
-                    isLoading={false}
+                    isLoading={isLoading}
                     onPress={handleRegister}
                 />
 
