@@ -5,6 +5,8 @@ import axios from "axios"
 
 import {colors} from "@/styles/colors";
 
+import {Data, useBadgeStore} from "@/store/badge-store"
+
 
 import {Button} from "@/components/button";
 import {Input} from "@/components/input";
@@ -19,6 +21,7 @@ export default function Register() {
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const badgeStore = useBadgeStore();
 
     async function handleRegister() {
         try {
@@ -32,28 +35,33 @@ export default function Register() {
                 name, email
             })
 
-            if(registerResponse.data.attendeeId){
+            if (registerResponse.data.attendeeId) {
+
+                const badgeResponse = await api.get(`/attendees/${registerResponse.data.attendeeId}/badge`)
+
+                const eventResponse = await api.get(`/events/${badgeResponse.data.badge.eventId}`)
+
+
+                badgeStore.save({badge: badgeResponse.data.badge, event: eventResponse.data.event})
+
                 Alert.alert("Inscrição", "Inscrição realizada com sucesso!", [
                     {text: "Ok", onPress: () => router.push("/ticket")}
                 ])
             }
-
-
         } catch (error) {
             console.log(error)
+            setIsLoading(false)
 
-            if(axios.isAxiosError(error)){
-                if(String(error.response?.data.message).includes("Attendee already registered")){
+            if (axios.isAxiosError(error)) {
+                if (String(error.response?.data.message).includes("Attendee already registered")) {
                     return Alert.alert("Inscrição", "Este e-mail já está cadastrado!")
                 }
-                if(String(error.response?.data.message).includes("Event is full")){
+                if (String(error.response?.data.message).includes("Event is full")) {
                     return Alert.alert("Inscrição", "O evento está cheio!")
                 }
             }
 
             Alert.alert("Inscrição", "Não foi possível fazer a inscrição")
-        } finally {
-            setIsLoading(false)
         }
 
     }
